@@ -3,59 +3,107 @@
     <h1>Jogo da forca</h1>
 
     <section v-if="tela === 'inicio'" id="inicio">
-      <Formulario v-if="etapa === 'palavra'"
+      <Formulario
+        v-if="etapa === 'palavra'"
         title="Defina a palavra"
-        button="Próximo" 
-        :action ="setPalavra"
-        />
+        button="Próximo"
+        :action="setPalavra"
+      />
 
-        <Formulario v-if="etapa === 'dica'"
+      <Formulario
+        v-if="etapa === 'dica'"
         title="Defina a dica"
-        button="Iniciar Jogo" 
-        :action ="setDica"/>
-
-
-    </section>
-
-    <section v-if="tela === 'jogo'" id="jogo">
-      <Jogo 
-      :erros = "erros"
+        button="Iniciar Jogo"
+        :action="setDica"
       />
     </section>
 
+    <section v-if="tela === 'jogo'" id="jogo">
+      <Jogo
+        :erros="erros"
+        :palavra="palavra"
+        :dica="dica"
+        :verificaLetra="verificaLetra"
+        :etapa="etapa"
+        :letras="letras"
+        :jogar="jogar"
+        :jogarNovamente="jogarNovamente"
+      />
+    </section>
   </div>
 </template>
 
 <script>
 import "./css/global.css";
 
-import Formulario from './components/Formulario.vue';
-import Jogo from './components/Jogo.vue'
+import Formulario from "./components/Formulario.vue";
+import Jogo from "./components/Jogo.vue";
+
 
 export default {
   name: "App",
   data() {
     return {
       tela: "inicio",
-      etapa: 'palavra',
-      palavra:'',
-      dica:'',
-      erros: 3
+      etapa: "palavra",
+      palavra: "",
+      dica: "",
+      erros: 0,
+      letras:[]
     };
   },
-  components: {Formulario, Jogo},
+  components: { Formulario, Jogo },
 
-  methods:{
-    setPalavra(palavra){
+  methods: {
+    setPalavra(palavra) {
       this.palavra = palavra;
-      this.etapa = 'dica'
+      this.etapa = "dica";
     },
 
-    setDica(dica){
+    setDica(dica) {
       this.dica = dica;
-      this.tela = 'jogo';
-      this.etapa = 'jogo'
+      this.tela = "jogo";
+      this.etapa = "jogo";
+    },
+    verificaLetra(letra) {
+      return this.letras.find(item => item.toLowerCase() === letra.toLowerCase())
+    },
+
+    jogar(letra){
+      this.letras.push(letra)
+
+      this.verificaErros(letra)
+    },
+
+    verificaErros(letra){
+      if(this.palavra.toLowerCase().indexOf(letra.toLowerCase()) >= 0){
+        return this.verificaAcertos();
+      }
+
+      this.erros ++;
+
+      if(this.erros === 6){
+        this.etapa = 'enforcado'
+      }
+    },
+
+    verificaAcertos(){
+      let letrasUnicas = [...new Set(this.palavra.split(''))];
+
+      if(letrasUnicas.length === (this.letras.length - this.erros)){
+        this.etapa='ganhador'
+      }
+    },
+    jogarNovamente(){
+      this.tela= "inicio",
+      this.etapa= "palavra",
+      this.palavra= "",
+      this.dica= "",
+      this.erros= 0,
+      this.letras=[]
     }
+    
+
   },
 };
 </script>
